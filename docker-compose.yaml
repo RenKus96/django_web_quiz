@@ -3,41 +3,88 @@ version: '3.7'
 services:
   web:
     build: .
-    container_name: web_service
+    container_name: web-service
     command: gunicorn app.wsgi:application --bind 0.0.0.0:8000
     volumes:
-      - static_volum:/usr/src/static
-      - media_volum:/usr/src/media
+      - ./src:/usr/src
+      - ./src/static:/usr/src/static
+      - ./src/media:/usr/src/media
     ports:
-      - 8002:8000
+      - "8002:8000"
     env_file:
-      - .web_env.dev
+      - .env
     depends_on:
       - db
+      - rabbitmq
 
   db:
     image: postgres:12.0-alpine
-    container_name: db_service
+    container_name: db-service
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     ports:
-      - 5432:5432
+      - "5432:5432"
     env_file:
-      - .db_env.dev
+      - .env
 
   nginx:
     build: ./nginx
-    container_name: nginx_service
+    container_name: nginx-service
     volumes:
-      - static_volum:/usr/src/static
-      - media_volum:/usr/src/media
+      - ./src/static:/usr/src/static
+      - ./src/media:/usr/src/media
     ports:
       - 8080:80
     depends_on:
       - web
 
+# broker
+  rabbitmq:
+    image: rabbitmq:3.9.5-alpine
+    container_name: rabbitmq-service
+    env_file: .env
+    ports:
+      - "5672:5672"
+    volumes:
+      - rabbit_volume:/var/lib/rabbitmq
+
+# backend
+  redis:
+    image: redis:6.2.5-alpine
+    container_name: redis-service
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_volume:/data
+
+# worker
+  celery:
+    build: .
+    container_name: celery-service
+    command: sh -c "celery -A app worker --concurrency=20 --loglevel=info"
+    env_file: .env
+    volumes:
+      - ./src:/usr/src
+    depends_on:
+      - redis
+      - rabbitmq
+
+  celery-beat:
+    build: .
+    container_name: celery_beat-service
+    command: sh -c "celery -A app beat -l info"
+    env_file: .env
+    volumes:
+      - ./src:/usr/src
+    depends_on:
+      - redis
+      - rabbitmq
+      - celery
+
 volumes:
   postgres_data:
-    name: db_data
-  static_volum:
-  media_volum:
+    name: db_data_volume
+  rabbit_volume:
+    name: rabbit_data_volume
+  redis_volume:
+    name: redis_data_volume
