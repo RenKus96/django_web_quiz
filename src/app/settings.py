@@ -48,7 +48,7 @@ INSTALLED_APPS = [
     'core.apps.CoreConfig',
     'accounts.apps.AccountsConfig',
     'quiz.apps.QuizConfig',
-    'tasks.apps.TasksConfig',
+    # 'tasks.apps.TasksConfig',
 ]
 
 MIDDLEWARE = [
