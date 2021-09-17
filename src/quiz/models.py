@@ -96,3 +96,7 @@ class Result(BaseModel):
         # scores = self.num_correct_answers - self.num_incorrect_answers
         # return scores if scores > 0 else 0
         return max(0, self.num_correct_answers - self.num_incorrect_answers)
+
+    def __str__(self):
+        # return f'{self.user}: {self.exam} {self.num_correct_answers} {self.num_incorrect_answers}'
+        return f'{self.user}: {self.exam}, result: {self.scores_result()}'
