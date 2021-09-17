@@ -5,7 +5,6 @@ services:
     build: .
     container_name: web-service
     command: gunicorn app.wsgi:application --bind 0.0.0.0:8000
-#    command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - ./src:/usr/src
       - ./src/static:/usr/src/static
