@@ -15,3 +15,8 @@ def sample_task():
 @shared_task
 def send_email_report():
     call_command('email_report')
+
+
+@shared_task
+def send_email_new_user():
+    call_command('email_new_user')
